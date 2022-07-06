@@ -1,0 +1,81 @@
+version: "3.7"
+
+services:
+  kafka-consumer-challenge:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      target: development
+    labels:
+      container-name: kafka-consumer-challenge
+    ports:
+      - 8080:8080
+    env_file:
+      - .env
+    volumes:
+      - ../:/development
+    depends_on:
+      - broker
+
+  zookeeper:
+    platform: linux/arm64
+    image: confluentinc/cp-zookeeper:5.3.1
+    hostname: zookeeper
+    container_name: zookeeper
+    ports:
+      - 2181:2181
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  broker:
+    platform: linux/arm64
+    image: confluentinc/cp-kafka:5.3.1
+    hostname: broker
+    container_name: broker
+    depends_on:
+      - zookeeper
+    ports:
+      - 29092:29092
+      - 9092:9092
+      - 9093:9093
+    environment:
+    #BASE CONFLUENT ENVIRONMENTS
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_CONFLUENT_SUPPORT_METRICS_ENABLE: "false"
+    #KAFKA LISTENERS
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: SASL_PLAINTEXT:SASL_PLAINTEXT,SASL_PLAINTEXT_HOST:SASL_PLAINTEXT
+      KAFKA_LISTENERS: SASL_PLAINTEXT://0.0.0.0:29092,SASL_PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: SASL_PLAINTEXT://broker:29092,SASL_PLAINTEXT_HOST://localhost:9092
+      KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
+      ZOOKEEPER_SASL_ENABLED: "FALSE"
+    #KAFKA LOGS
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=FINE,org.apache.kafka=FINE"
+      KAFKA_LOG4J_ROOT_LOGLEVEL: INFO
+    ############## Authorizer ######################
+      KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "true"
+      KAFKA_OPTS: "-Djava.security.auth.login.config=/etc/kafka/kafka_server_jaas.conf"
+    #KAFKA INTERBROKER SECURITY
+      KAFKA_SECURITY_INTER_BROKER_PROTOCOL: SASL_PLAINTEXT
+      KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
+    # Access denials are logged at INFO level, change to DEBUG to also log allowed accesses
+      KAFKA_LOG4J_LOGGER_KAFKA_AUTHORIZER_LOGGER: "DEBUG, authorizerAppender"
+      KAFKA_LOG4J_ADDITIVITY_KAFKA_AUTHORIZER_LOGGER: "false"
+    volumes:
+      - ../docker/kafka/config/kafka_server_jaas.conf:/etc/kafka/kafka_server_jaas.conf
+
+  kafka-ui:
+    image: obsidiandynamics/kafdrop
+    ports: 
+      - 9001:9000
+    depends_on:
+      - broker
+    environment: 
+      - KAFKA_BROKERCONNECT=broker:29092
+      - JVM_OPTS=-Xms32M -Xmx64M
+      - SERVER_SERVLET_CONTEXTPATH=/
+      # base64 encoded kafka configuration to connect
+      - KAFKA_PROPERTIES=c2VjdXJpdHkucHJvdG9jb2w9U0FTTF9QTEFJTlRFWFQKc2FzbC5qYWFzLmNvbmZpZz1vcmcuYXBhY2hlLmthZmthLmNvbW1vbi5zZWN1cml0eS5wbGFpbi5QbGFpbkxvZ2luTW9kdWxlIHJlcXVpcmVkIHVzZXJuYW1lPSdrYWZrYS1jb25zdW1lcicgICBwYXNzd29yZD0nc2VjcmV0LXBhc3N3b3JkJzsKc2FzbC5tZWNoYW5pc209UExBSU4=
