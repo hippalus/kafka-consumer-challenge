@@ -1,4 +1,4 @@
-package com.company.vertical.kafkaconsumer;
+package com.company.vertical;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -6,8 +6,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class KafkaConsumerApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(KafkaConsumerApplication.class, args);
-	}
+  public static void main(final String[] args) {
+    SpringApplication.run(KafkaConsumerApplication.class, args);
+  }
 
 }

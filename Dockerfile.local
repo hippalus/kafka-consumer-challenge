@@ -1,18 +1,24 @@
-FROM maven:3.8.5-openjdk-17 as module-build
+FROM maven:3.8-eclipse-temurin-17 as module-build
 
 WORKDIR /module/kafka
 
 COPY . .
 
-RUN mv ./src/main/resources/application-env.properties ./src/main/resources/application.properties 
+RUN mv ./src/main/resources/application-env.properties ./src/main/resources/application.properties
 
-RUN mvn clean package
+RUN mvn clean package -Dmaven.test.skip=true
 
-FROM openjdk:17.0.2-jdk-slim as production
+FROM amd64/eclipse-temurin:17.0.3_7-jre-alpine as production
 
 USER root
 
-RUN apt-get update -y && apt-get install -y jq curl
+RUN apk --no-cache add curl
+
+RUN apk add wget
+
+RUN wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 && \
+    mv jq-linux64 /usr/local/bin/jq && \
+    chmod +x /usr/local/bin/jq
 
 USER 1000
 
@@ -22,7 +28,7 @@ COPY --from=module-build --chown=1000:1000 /module/kafka/target/kafka-consumer-c
 
 COPY docker/consumer/bin/entrypoint.sh /entrypoint.sh
 
-CMD [ "/entrypoint.sh" ]
+CMD [ "java -jar /kafka-consumer-challenge.jar" ]
 
 FROM production as development
 
