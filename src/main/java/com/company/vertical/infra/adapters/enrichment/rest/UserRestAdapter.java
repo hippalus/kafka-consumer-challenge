@@ -29,7 +29,7 @@ public class UserRestAdapter implements UserPort {
 
     final Flux<UserPost> userPosts = this.retrieveUserPosts(userId);
 
-    final Flux<PostComment> postComments = userPosts.map(UserPost::id).flatMap(this::retrievePostComments);
+    final Flux<PostComment> postComments = userPosts.map(UserPost::id).flatMap(this::retrievePostComments, 5);
 
     return this.toEnrichedUserModel(userId, userTodos, userPosts, postComments).block();
   }
