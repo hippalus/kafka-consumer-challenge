@@ -1,7 +1,7 @@
 package com.company.vertical.infra.gorestclient.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 
 public record UserTodoResponse(
     Long id,
@@ -9,7 +9,7 @@ public record UserTodoResponse(
     Long userId,
     String title,
     @JsonProperty("due_on")
-    ZonedDateTime duesOn,
+    OffsetDateTime duesOn,
     String status) {
 
 }

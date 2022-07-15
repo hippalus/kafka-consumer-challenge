@@ -7,9 +7,11 @@ import com.company.vertical.domain.user.enrichment.model.EnrichedUser;
 import com.company.vertical.domain.user.enrichment.port.MigrateUserEnrichedEventPort;
 import com.company.vertical.domain.user.enrichment.port.UserPort;
 import com.company.vertical.domain.user.enrichment.usecase.EnrichUser;
-import org.springframework.stereotype.Component;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
-@Component
+@Slf4j
+@Service
 public class EnrichUserUseCaseHandler implements ObservableUseCasePublisher, UseCaseHandler<EnrichedUser, EnrichUser> {
 
   private final UserPort userPort;
@@ -25,6 +27,7 @@ public class EnrichUserUseCaseHandler implements ObservableUseCasePublisher, Use
   public EnrichedUser handle(final EnrichUser useCase) {
     final EnrichedUser enrichedUser = this.userPort.enrichUser(useCase.userId());
     this.migrateUserEnrichedEventPort.publish(MigrateUserEnriched.fromModel(enrichedUser));
+    log.info("User enrichment completed successfully. {}", enrichedUser);
     return enrichedUser;
   }
 

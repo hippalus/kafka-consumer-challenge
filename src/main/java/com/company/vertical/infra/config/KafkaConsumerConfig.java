@@ -39,6 +39,7 @@ public class KafkaConsumerConfig {
     props.put(ConsumerConfig.GROUP_ID_CONFIG, this.consumerGroupId);
     props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
     props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+    props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
     props.put("security.protocol", this.protocol);
     props.put("client.dns.lookup", ClientDnsLookup.USE_ALL_DNS_IPS.toString());
     props.put("sasl.mechanism", "PLAIN");
