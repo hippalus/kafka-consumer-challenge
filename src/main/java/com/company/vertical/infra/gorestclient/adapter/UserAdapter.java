@@ -3,12 +3,13 @@ package com.company.vertical.infra.gorestclient.adapter;
 import com.company.vertical.infra.gorestclient.request.RequestOptions;
 import com.company.vertical.infra.gorestclient.response.UserPostResponse;
 import com.company.vertical.infra.gorestclient.response.UserTodoResponse;
+import java.util.List;
 import java.util.Objects;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-import reactor.core.publisher.Flux;
 
 @Component
 public class UserAdapter extends AbstractRestAdapter {
@@ -20,33 +21,34 @@ public class UserAdapter extends AbstractRestAdapter {
   private static final String USERS_POSTS = USERS + USER_ID + POSTS;
   private static final String USERS_TODOS = USERS + USER_ID + TODOS;
 
-  public UserAdapter(final RequestOptions requestOptions, final WebClient webClient) {
-    super(requestOptions, webClient);
+  private final ParameterizedTypeReference<List<UserPostResponse>> postResponseType = new ParameterizedTypeReference<>() {
+  };
+  private final ParameterizedTypeReference<List<UserTodoResponse>> todoResponseType = new ParameterizedTypeReference<>() {
+  };
+
+  public UserAdapter(final RequestOptions requestOptions, final RestTemplate restTemplate) {
+    super(requestOptions, restTemplate);
   }
 
-  public Flux<UserPostResponse> retrievePosts(final Long userId) {
+  public ResponseEntity<List<UserPostResponse>> retrievePosts(final Long userId, final Integer page) {
     final var uri = UriComponentsBuilder.fromHttpUrl(this.requestOptions.getBaseUrl())
         .path(USERS_POSTS)
+        .queryParam("page", Objects.requireNonNull(page))
         .buildAndExpand(Objects.requireNonNull(userId))
         .toUriString();
 
-    return this.doGetFlux(uri, UserPostResponse.class)
-        .expand(response -> this.nextPage(response, UserPostResponse.class))
-        .flatMap(ResponseEntity::getBody)
-        .filter(Objects::nonNull);
+    return this.doGet(uri, this.postResponseType);
   }
 
 
-  public Flux<UserTodoResponse> retrieveTodos(final Long userId) {
+  public ResponseEntity<List<UserTodoResponse>> retrieveTodos(final Long userId, final Integer page) {
     final var uri = UriComponentsBuilder.fromHttpUrl(this.requestOptions.getBaseUrl())
         .path(USERS_TODOS)
+        .queryParam("page", Objects.requireNonNull(page))
         .buildAndExpand(Objects.requireNonNull(userId))
         .toUriString();
 
-    return this.doGetFlux(uri, UserTodoResponse.class)
-        .expand(response -> this.nextPage(response, UserTodoResponse.class))
-        .flatMap(ResponseEntity::getBody)
-        .filter(Objects::nonNull);
+    return this.doGet(uri, this.todoResponseType);
   }
 
 }

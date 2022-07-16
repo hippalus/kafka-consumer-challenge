@@ -1,73 +1,148 @@
 package com.company.vertical.infra.gorestclient.net;
 
-import com.company.vertical.infra.gorestclient.auth.TokenProvider;
-import com.company.vertical.infra.gorestclient.exception.RemoteCallException;
-import com.company.vertical.infra.gorestclient.request.RequestOptions;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.Objects;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HeaderElement;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.ConnectionKeepAliveStrategy;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.message.BasicHeaderElementIterator;
+import org.apache.http.protocol.HTTP;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.web.reactive.function.client.ClientRequest;
-import org.springframework.web.reactive.function.client.ClientResponse;
-import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.web.client.RestTemplate;
 
 
+@Slf4j
 @Configuration
 @RequiredArgsConstructor
 public class HttpClientConfig {
 
-  private final RequestOptions requestOptions;
-  private final TokenProvider tokenProvider;
+  private static final int CONNECT_TIMEOUT = 60000;
+  private static final int KEEP_ALIVE = 20000;
+  private static final int IDLE_TIMEOUT = 10000;
+  private static final int INITIAL_DELAY = 30000;
+  private static final int IDLE_CONN_CLOSE_PERIOD = INITIAL_DELAY / 2;
+  private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+  private final HeaderInterceptor headerInterceptor;
 
   @Bean
-  public WebClient webClient(final WebClient.Builder builder) {
-    return builder.baseUrl(this.requestOptions.getBaseUrl())
-        .defaultHeaders(this.defaultHeaders())
-        .filter(this.errorHandler())
-        .filter(this.retryOn429Or401())
+  public RestTemplate restTemplate() {
+    return new RestTemplateBuilder()
+        .requestFactory(this::clientHttpRequestFactory)
+        .interceptors(List.of(this.headerInterceptor))
         .build();
   }
 
-  public Consumer<HttpHeaders> defaultHeaders() {
-    return httpHeaders -> {
-      httpHeaders.add(HttpHeaders.ACCEPT_ENCODING, this.requestOptions.getEncoding());
-      httpHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-      httpHeaders.add(HttpHeaders.AUTHORIZATION, "Bearer " + this.tokenProvider.current());
+  @Bean
+  public HttpComponentsClientHttpRequestFactory clientHttpRequestFactory() {
+    final var factory = new HttpComponentsClientHttpRequestFactory();
+    factory.setHttpClient(this.httpClient());
+    return factory;
+
+  }
+
+  @Bean
+  public CloseableHttpClient httpClient() {
+    final var connectionManager = this.poolingConnectionManager();
+    this.prepareSchedulerForIdleConnections(connectionManager);
+
+    return HttpClients.custom()
+        .setDefaultRequestConfig(this.requestConfig())
+        .setConnectionManager(connectionManager)
+        .setKeepAliveStrategy(this.connectionKeepAliveStrategy())
+        .build();
+  }
+
+  @Bean
+  public RequestConfig requestConfig() {
+    return RequestConfig.custom()
+        .setContentCompressionEnabled(true)
+        .setConnectionRequestTimeout(CONNECT_TIMEOUT)
+        .setConnectTimeout(CONNECT_TIMEOUT)
+        .setSocketTimeout(CONNECT_TIMEOUT)
+        .build();
+  }
+
+  @Bean
+  public PoolingHttpClientConnectionManager poolingConnectionManager() {
+    final var sslContextBuilder = SSLContextBuilder.create();
+    try {
+      sslContextBuilder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
+    } catch (final NoSuchAlgorithmException | KeyStoreException e) {
+      log.warn(e.getMessage());
+    }
+
+    final SSLConnectionSocketFactory sslConnectionSocketFactory = this.getSslConnectionSocketFactory(sslContextBuilder);
+
+    final var connSocketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create();
+    connSocketFactoryRegistry.register("http", new PlainConnectionSocketFactory());
+
+    if (Objects.nonNull(sslConnectionSocketFactory)) {
+      connSocketFactoryRegistry.register("https", sslConnectionSocketFactory);
+    }
+
+    final var poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager(connSocketFactoryRegistry.build());
+    poolingHttpClientConnectionManager.setMaxTotal(20);
+
+    return poolingHttpClientConnectionManager;
+  }
+
+  @Bean
+  public ConnectionKeepAliveStrategy connectionKeepAliveStrategy() {
+    return (httpResponse, httpContext) -> {
+      final var it = new BasicHeaderElementIterator(httpResponse.headerIterator(HTTP.CONN_KEEP_ALIVE));
+      while (it.hasNext()) {
+        final HeaderElement headerElement = it.nextElement();
+        if (headerElement.getName() != null && headerElement.getValue().equalsIgnoreCase("timeout")) {
+          return Long.parseLong(headerElement.getValue()) * 1000;
+        }
+      }
+      return KEEP_ALIVE;
     };
   }
 
-  @Bean
-  public ExchangeFilterFunction errorHandler() {
-    return ExchangeFilterFunction.ofResponseProcessor(clientResponse -> {
-      if (clientResponse.statusCode().is5xxServerError()) {
-        return clientResponse.bodyToMono(String.class).flatMap(errorBody -> Mono.error(RemoteCallException.of(errorBody)));
-      }
-      return Mono.just(clientResponse);
-    });
+  private SSLConnectionSocketFactory getSslConnectionSocketFactory(final SSLContextBuilder sslContextBuilder) {
+    try {
+      return new SSLConnectionSocketFactory(sslContextBuilder.build());
+    } catch (final NoSuchAlgorithmException | KeyManagementException e) {
+      log.warn(e.getMessage());
+    }
+    return null;
   }
 
-  @Bean
-  public ExchangeFilterFunction retryOn429Or401() {
-    return (request, next) -> next.exchange(request)
-        .flatMap((Function<ClientResponse, Mono<ClientResponse>>) clientResponse -> {
-          final HttpStatus responseStatus = clientResponse.statusCode();
-          if (responseStatus == HttpStatus.TOO_MANY_REQUESTS || responseStatus == HttpStatus.UNAUTHORIZED) {
-            return next.exchange(this.refreshToken(request));
-          }
-          return Mono.just(clientResponse);
-        });
+  private void prepareSchedulerForIdleConnections(final PoolingHttpClientConnectionManager connectionManager) {
+    this.executor.scheduleAtFixedRate(
+        this.closeExpiredConnections(connectionManager),
+        INITIAL_DELAY,
+        IDLE_CONN_CLOSE_PERIOD,
+        TimeUnit.MILLISECONDS
+    );
   }
 
-  private ClientRequest refreshToken(final ClientRequest request) {
-    return ClientRequest.from(request)
-        .headers(httpHeaders -> httpHeaders.replace(HttpHeaders.AUTHORIZATION, List.of("Bearer " + this.tokenProvider.next())))
-        .build();
+  private Runnable closeExpiredConnections(final PoolingHttpClientConnectionManager cm) {
+    return () -> {
+      cm.closeExpiredConnections();
+      cm.closeIdleConnections(IDLE_TIMEOUT, TimeUnit.MILLISECONDS);
+      log.trace("Expired and idle connections closed");
+    };
   }
 }
