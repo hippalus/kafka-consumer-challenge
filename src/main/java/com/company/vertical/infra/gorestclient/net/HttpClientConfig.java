@@ -3,7 +3,6 @@ package com.company.vertical.infra.gorestclient.net;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -42,13 +41,11 @@ public class HttpClientConfig {
   private static final int INITIAL_DELAY = 30000;
   private static final int IDLE_CONN_CLOSE_PERIOD = INITIAL_DELAY / 2;
   private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-  private final HeaderInterceptor headerInterceptor;
 
   @Bean
   public RestTemplate restTemplate() {
     return new RestTemplateBuilder()
         .requestFactory(this::clientHttpRequestFactory)
-        .interceptors(List.of(this.headerInterceptor))
         .build();
   }
 

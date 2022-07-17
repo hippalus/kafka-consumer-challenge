@@ -38,8 +38,10 @@ public class EnrichUserUseCaseHandler implements ObservableUseCasePublisher, Use
 
     final EnrichedUser enrichedUser = this.combine(userId, userTodosFuture, userPostsFuture, postCommentsFuture);
 
-    this.migrateUserEnrichedEventPort.publish(MigrateUserEnriched.fromModel(enrichedUser));
-    log.info("User enrichment completed successfully. {}", enrichedUser);
+    if (!enrichedUser.isEmpty()) {
+      this.migrateUserEnrichedEventPort.publish(MigrateUserEnriched.fromModel(enrichedUser));
+      log.info("User enrichment completed successfully. {}", enrichedUser);
+    }
 
     return enrichedUser;
   }
@@ -72,7 +74,7 @@ public class EnrichUserUseCaseHandler implements ObservableUseCasePublisher, Use
   }
 
   private List<PostComment> retrieveEachPostComments(final List<UserPost> userPosts) {
-    return userPosts.stream()
+    return userPosts.stream().parallel()
         .map(UserPost::id)
         .<PostComment>mapMulti((postId, consumer) -> this.userPort.retrievePostComments(postId).forEach(consumer))
         .toList();
