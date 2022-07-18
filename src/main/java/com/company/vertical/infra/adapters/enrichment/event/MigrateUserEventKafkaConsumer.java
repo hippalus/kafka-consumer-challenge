@@ -27,7 +27,7 @@ public class MigrateUserEventKafkaConsumer implements BeanAwareUseCasePublisher 
 
   private final ObjectMapper objectMapper;
 
-  @KafkaListener(topics = "${spring.kafka.topic}", autoStartup = "${spring.kafka.consumer.auto-startup:false}", containerFactory = "kafkaListenerContainerFactory")
+  @KafkaListener(topics = "${spring.kafka.topic}", autoStartup = "${spring.kafka.consumer.auto-startup}", containerFactory = "kafkaListenerContainerFactory")
   public void consume(@Payload final ConsumerRecord<String, String> consumerRecord) {
     final CloudEvent cloudEvent = this.toCloudEvent(consumerRecord.value());
     final MigrateUser migrateUserEvent = this.getMigrateUserEvent(cloudEvent);

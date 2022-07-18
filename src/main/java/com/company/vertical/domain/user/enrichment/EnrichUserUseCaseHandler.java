@@ -13,10 +13,12 @@ import com.company.vertical.domain.user.enrichment.usecase.EnrichUser;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
+@ConditionalOnProperty(name = "usecase.enabled", havingValue = "true")
 public class EnrichUserUseCaseHandler implements ObservableUseCasePublisher, UseCaseHandler<EnrichedUser, EnrichUser> {
 
   private final UserPort userPort;

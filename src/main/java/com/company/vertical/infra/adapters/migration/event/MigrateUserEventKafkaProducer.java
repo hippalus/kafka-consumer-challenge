@@ -36,7 +36,7 @@ public class MigrateUserEventKafkaProducer implements MigrateUserEventPort {
     this.kafkaTemplate.send(this.topic, cloudEventStr);
   }
 
-  private CloudEvent createCloudEvent(final MigrateUser user) {
+  public CloudEvent createCloudEvent(final MigrateUser user) {
     return CloudEventBuilder.v1()
         .withType(user.getClass().getCanonicalName())
         .withSubject(user.getClass().getSimpleName())
@@ -49,7 +49,7 @@ public class MigrateUserEventKafkaProducer implements MigrateUserEventPort {
 
   }
 
-  private String toStr(final CloudEvent migrateUser) {
+  public String toStr(final CloudEvent migrateUser) {
     return new String(
         Objects.requireNonNull(EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE))
             .serialize(migrateUser)

@@ -39,8 +39,6 @@ class UserRestAdapterIT extends AbstractIT {
 
     wireMockServer.start();
 
-    wireMockServer.baseUrl();
-
     wireMockServer.stubFor(
         get(urlMatching("/users/1234/posts\\??(?:&?[^=&]*=[^=&]*)*"))
             .willReturn(aResponse()
@@ -82,13 +80,8 @@ class UserRestAdapterIT extends AbstractIT {
     wireMockServer.stop();
   }
 
-  public static void main(final String[] args) {
-    final OffsetDateTime parse = OffsetDateTime.parse("2022-08-07T00:00:00.000+05:30", DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-    System.out.println(parse.toInstant());
-  }
-
   @Test
-  void shouldGetUserPosts() {
+  void shouldRetrieveUserPosts() {
     //given:
     final Long userId = 1234L;
 
@@ -112,7 +105,7 @@ class UserRestAdapterIT extends AbstractIT {
   }
 
   @Test
-  void shouldGetUserTodos() {
+  void shouldRetrieveUserTodos() {
     //given:
     final Long userId = 1234L;
 

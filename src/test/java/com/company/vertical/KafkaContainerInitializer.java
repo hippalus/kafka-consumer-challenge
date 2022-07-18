@@ -3,17 +3,17 @@ package com.company.vertical;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Tag;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.ContextClosedEvent;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
 @Slf4j
-@Profile("integrationTest")
+@Tag("integrationTest")
 public class KafkaContainerInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
   @SuppressWarnings("resource")
