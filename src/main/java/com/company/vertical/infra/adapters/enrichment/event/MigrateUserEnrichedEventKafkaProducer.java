@@ -21,7 +21,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class MigrateUserEnrichedEventKafkaProducer implements MigrateUserEnrichedEventPort {
 
-  public static final String EVENT_SOURCE = "http://localhost";
+  private static final String EVENT_SOURCE = "http://localhost";
   private final ObjectMapper objectMapper;
   private final KafkaTemplate<String, String> kafkaTemplate;
   @Value("${spring.kafka.topic}")

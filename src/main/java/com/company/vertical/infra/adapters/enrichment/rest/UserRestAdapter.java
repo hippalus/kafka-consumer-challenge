@@ -30,26 +30,6 @@ public class UserRestAdapter implements UserPort {
   private static final Integer FIRST_PAGE = 1;
   private final GoRestClient goRestClient;
 
-  private static Function<UserPostResponse, UserPost> toUserPostModel() {
-    return response -> new UserPost(response.id(), response.userId(), response.title(), response.body());
-  }
-
-  private static Function<UserTodoResponse, UserTodo> toUserTodoModel() {
-    return response -> new UserTodo(response.id(), response.userId(), response.title(), response.duesOn(), response.status());
-  }
-
-  private static Function<PostCommentResponse, PostComment> toPostCommentModel() {
-    return item -> new PostComment(item.id(), item.postId(), item.name(), item.email(), item.body());
-  }
-
-  private static Integer getTotalPages(final ResponseEntity<?> responseEntity) {
-    final List<String> totalPages = responseEntity.getHeaders().get(X_PAGINATION_PAGES);
-    if (CollectionUtils.isEmpty(totalPages) || StringUtils.isEmpty(totalPages.get(0))) {
-      return FIRST_PAGE;
-    }
-    return Integer.valueOf(totalPages.get(0));
-  }
-
   @Override
   public List<UserPost> retrieveUserPosts(final Long userId) {
     final ResponseEntity<List<UserPostResponse>> responseEntity = this.goRestClient.users().retrievePosts(userId, FIRST_PAGE);
@@ -111,6 +91,26 @@ public class UserRestAdapter implements UserPort {
         .<PostCommentResponse>mapMulti((response, consumer) -> Objects.requireNonNull(response.getBody()).forEach(consumer))
         .map(toPostCommentModel())
         .toList();
+  }
+
+  private static Function<UserPostResponse, UserPost> toUserPostModel() {
+    return response -> new UserPost(response.id(), response.userId(), response.title(), response.body());
+  }
+
+  private static Function<UserTodoResponse, UserTodo> toUserTodoModel() {
+    return response -> new UserTodo(response.id(), response.userId(), response.title(), response.duesOn(), response.status());
+  }
+
+  private static Function<PostCommentResponse, PostComment> toPostCommentModel() {
+    return item -> new PostComment(item.id(), item.postId(), item.name(), item.email(), item.body());
+  }
+
+  private static Integer getTotalPages(final ResponseEntity<?> responseEntity) {
+    final List<String> totalPages = responseEntity.getHeaders().get(X_PAGINATION_PAGES);
+    if (CollectionUtils.isEmpty(totalPages) || StringUtils.isEmpty(totalPages.get(0))) {
+      return FIRST_PAGE;
+    }
+    return Integer.valueOf(totalPages.get(0));
   }
 
 }

@@ -28,6 +28,7 @@ public class UserAdapter extends AbstractRestAdapter {
   private static final String USERS_POSTS = USERS + USER_ID + POSTS;
   private static final String USERS_TODOS = USERS + USER_ID + TODOS;
 
+
   private final ParameterizedTypeReference<List<UserPostResponse>> postResponseType = new ParameterizedTypeReference<>() {
   };
   private final ParameterizedTypeReference<List<UserTodoResponse>> todoResponseType = new ParameterizedTypeReference<>() {
@@ -39,13 +40,13 @@ public class UserAdapter extends AbstractRestAdapter {
 
   @Retryable(
       value = Exception.class,
-      maxAttempts = 5,
-      backoff = @Backoff(delayExpression = "2000")
+      maxAttemptsExpression = "${gorest-client.max-attempts}",
+      backoff = @Backoff(delayExpression = "${gorest-client.delay}")
   )
   public ResponseEntity<List<UserPostResponse>> retrievePosts(final Long userId, final Integer page) {
     final var uri = UriComponentsBuilder.fromHttpUrl(this.requestOptions.getBaseUrl())
         .path(USERS_POSTS)
-        .queryParam("page", Objects.requireNonNull(page))
+        .queryParam(PAGE, Objects.requireNonNull(page))
         .buildAndExpand(Objects.requireNonNull(userId))
         .toUriString();
 
@@ -61,13 +62,13 @@ public class UserAdapter extends AbstractRestAdapter {
 
   @Retryable(
       value = Exception.class,
-      maxAttempts = 5,
-      backoff = @Backoff(delayExpression = "2000")
+      maxAttemptsExpression = "${gorest-client.max-attempts}",
+      backoff = @Backoff(delayExpression = "${gorest-client.delay}")
   )
   public ResponseEntity<List<UserTodoResponse>> retrieveTodos(final Long userId, final Integer page) {
     final var uri = UriComponentsBuilder.fromHttpUrl(this.requestOptions.getBaseUrl())
         .path(USERS_TODOS)
-        .queryParam("page", Objects.requireNonNull(page))
+        .queryParam(PAGE, Objects.requireNonNull(page))
         .buildAndExpand(Objects.requireNonNull(userId))
         .toUriString();
 

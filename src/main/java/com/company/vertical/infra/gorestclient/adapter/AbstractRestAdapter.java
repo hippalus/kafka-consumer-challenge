@@ -18,6 +18,7 @@ import org.springframework.web.client.RestTemplate;
 @RequiredArgsConstructor
 public abstract class AbstractRestAdapter {
 
+  protected static final String PAGE = "page";
   protected final RestTemplate restTemplate;
   protected final RequestOptions requestOptions;
   protected final TokenProvider tokenProvider;
@@ -55,7 +56,7 @@ public abstract class AbstractRestAdapter {
     return headers;
   }
 
-  private static HttpHeaders defaultHeaders() {
+  protected static HttpHeaders defaultHeaders() {
     final HttpHeaders headers = new HttpHeaders();
     headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
     headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);

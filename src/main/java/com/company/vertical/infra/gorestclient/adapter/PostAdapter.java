@@ -31,13 +31,13 @@ public class PostAdapter extends AbstractRestAdapter {
 
   @Retryable(
       value = Exception.class,
-      maxAttempts = 5,
-      backoff = @Backoff(delayExpression = "2000")
+      maxAttemptsExpression = "${gorest-client.max-attempts}",
+      backoff = @Backoff(delayExpression = "${gorest-client.delay}")
   )
   public ResponseEntity<List<PostCommentResponse>> retrievePostComments(final Long postId, final Integer page) {
     final var uri = UriComponentsBuilder.fromHttpUrl(this.requestOptions.getBaseUrl())
         .path(POST_COMMENTS)
-        .queryParam("page", page)
+        .queryParam(PAGE, page)
         .buildAndExpand(Objects.requireNonNull(postId))
         .toUriString();
 
