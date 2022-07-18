@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class MigrateUserController implements BeanAwareUseCasePublisher {
 
   @PostMapping("/{id}")
-  public ResponseEntity<Void> findUserById(@PathVariable("id") final Long id) {
+  public ResponseEntity<Void> migrateUserById(@PathVariable("id") final Long id) {
     this.publish(this.toUseCase(id));
     return ResponseEntity.accepted().build();
   }

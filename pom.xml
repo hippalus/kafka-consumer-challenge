@@ -18,9 +18,7 @@
   <properties>
     <java.version>17</java.version>
     <httpclient.version>4.5.13</httpclient.version>
-    <spring-aspects.version>5.3.20</spring-aspects.version>
     <cloudevents-spring.version>2.3.0</cloudevents-spring.version>
-    <spring-kafka.version>2.8.5</spring-kafka.version>
     <logstash-logback-encoder.version>7.2</logstash-logback-encoder.version>
     <mockwebserver.version>4.10.0</mockwebserver.version>
   </properties>
@@ -48,9 +46,8 @@
     </dependency>
 
     <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-aspects</artifactId>
-      <version>${spring-aspects.version}</version>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-aop</artifactId>
     </dependency>
 
     <dependency>
@@ -62,7 +59,6 @@
     <dependency>
       <groupId>org.springframework.kafka</groupId>
       <artifactId>spring-kafka</artifactId>
-      <version>${spring-kafka.version}</version>
     </dependency>
 
     <dependency>
@@ -102,23 +98,22 @@
     </dependency>
 
     <dependency>
-      <groupId>com.squareup.okhttp3</groupId>
-      <artifactId>okhttp</artifactId>
-      <version>${mockwebserver.version}</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.squareup.okhttp3</groupId>
-      <artifactId>mockwebserver</artifactId>
-      <version>${mockwebserver.version}</version>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-contract-wiremock</artifactId>
+      <version>3.1.3</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.springframework.kafka</groupId>
       <artifactId>spring-kafka-test</artifactId>
-      <version>${spring-kafka.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>kafka</artifactId>
+      <version>1.17.3</version>
       <scope>test</scope>
     </dependency>
 
@@ -129,6 +124,7 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>2.7.1</version>
         <configuration>
           <finalName>kafka-consumer-challenge</finalName>
           <excludes>

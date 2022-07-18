@@ -9,6 +9,8 @@ import io.cloudevents.core.data.PojoCloudEventData;
 import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.jackson.JsonFormat;
 import java.net.URI;
+import java.time.Clock;
+import java.time.OffsetDateTime;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +41,7 @@ public class MigrateUserEventKafkaProducer implements MigrateUserEventPort {
         .withType(user.getClass().getCanonicalName())
         .withSubject(user.getClass().getSimpleName())
         .withSource(URI.create(EVENT_SOURCE))
+        .withTime(OffsetDateTime.now(Clock.systemUTC()))
         .withId(UUID.randomUUID().toString())
         .withDataContentType(MediaType.APPLICATION_JSON.toString())
         .withData(PojoCloudEventData.wrap(user, this.objectMapper::writeValueAsBytes))

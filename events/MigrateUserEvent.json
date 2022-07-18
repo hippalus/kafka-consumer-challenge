@@ -1,12 +1,12 @@
 {
   "specversion": "1.0",
-  "type": "com.company.vertical.events.MigrateUser",
-  "subject": "MigrateUser",
+  "id": "4d1459bb-4072-4a00-996f-26a7f00913fe",
   "source": "http://localhost",
-  "id": "620e32eec9593",
-  "time": "2022-02-17T12:35:10Z",
+  "type": "com.company.vertical.domain.user.migration.event.MigrateUser",
   "datacontenttype": "application/json",
+  "subject": "MigrateUser",
+  "time": "2022-07-18T11:40:29.740189Z",
   "data": {
-    "userId": 3793
+    "userId": 1
   }
 }
