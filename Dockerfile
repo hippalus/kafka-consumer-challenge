@@ -6,7 +6,7 @@ COPY . .
 
 RUN mv ./src/main/resources/application-env.properties ./src/main/resources/application.properties 
 
-RUN mvn clean package -DskipTests=true
+RUN mvn clean package -DskipTests
 
 FROM openjdk:17.0.2-jdk-slim as production
 

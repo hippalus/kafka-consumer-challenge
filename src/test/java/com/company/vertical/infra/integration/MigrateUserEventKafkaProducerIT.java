@@ -12,13 +12,15 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
 import java.net.URI;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
 @IT
 @KafkaIT
-@TestPropertySource(properties = {"spring.kafka.consumer.auto-startup=true", "kafka.enabled=true"})
+@TestPropertySource(properties = {"spring.kafka.consumer.auto-startup=false", "kafka.enabled=true"})
 class MigrateUserEventKafkaProducerIT {
 
   @Autowired
@@ -30,6 +32,15 @@ class MigrateUserEventKafkaProducerIT {
   @Autowired
   MigrateUserEventKafkaTestConsumer migrateUserEventKafkaTestConsumer;
 
+  @BeforeEach
+  void setUp() {
+    this.migrateUserEventKafkaTestConsumer.start();
+  }
+
+  @AfterEach
+  void tearDown() {
+    this.migrateUserEventKafkaTestConsumer.stop();
+  }
 
   @Test
   void should_send_event() {

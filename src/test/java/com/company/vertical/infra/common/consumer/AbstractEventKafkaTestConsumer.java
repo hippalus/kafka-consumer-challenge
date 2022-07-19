@@ -1,6 +1,5 @@
 package com.company.vertical.infra.common.consumer;
 
-import io.cloudevents.CloudEvent;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -19,6 +18,10 @@ public abstract class AbstractEventKafkaTestConsumer {
   private Deque<ConsumerRecord<String, String>> eventsQueue;
 
   public abstract void consume(@Payload ConsumerRecord<String, String> event);
+
+  public abstract void start();
+
+  public abstract void stop();
 
   protected void consumerInternal(final ConsumerRecord<String, String> event) {
     log.info("Event received:: {}", event);
