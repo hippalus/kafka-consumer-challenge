@@ -12,5 +12,5 @@ import org.springframework.context.annotation.Configuration;
 public class RequestOptions {
 
   private String baseUrl;
-
+  private String[] tokens;
 }
