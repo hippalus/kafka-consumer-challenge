@@ -15,12 +15,14 @@ import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@ConditionalOnProperty(value = "kafka.enabled", matchIfMissing = true)
 public class MigrateUserEventKafkaProducer implements MigrateUserEventPort {
 
   public static final String EVENT_SOURCE = "http://localhost";

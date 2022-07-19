@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.ClientDnsLookup;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.TopicBuilder;
@@ -13,6 +14,7 @@ import org.springframework.kafka.core.KafkaAdmin;
 
 @Configuration
 @RequiredArgsConstructor
+@ConditionalOnProperty(value = "kafka.enabled", matchIfMissing = true)
 public class KafkaAdminConfig {
 
   private final KafkaProperties kafkaProperties;

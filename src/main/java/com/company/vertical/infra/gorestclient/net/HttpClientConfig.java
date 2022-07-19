@@ -40,6 +40,8 @@ public class HttpClientConfig {
   private static final int IDLE_TIMEOUT = 10000;
   private static final int INITIAL_DELAY = 30000;
   private static final int IDLE_CONN_CLOSE_PERIOD = INITIAL_DELAY / 2;
+  private static final int MAX_TOTAL = 20;
+  private static final String TIMEOUT = "timeout";
   private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
   @Bean
@@ -98,7 +100,7 @@ public class HttpClientConfig {
     }
 
     final var poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager(connSocketFactoryRegistry.build());
-    poolingHttpClientConnectionManager.setMaxTotal(20);
+    poolingHttpClientConnectionManager.setMaxTotal(MAX_TOTAL);
 
     return poolingHttpClientConnectionManager;
   }
@@ -109,7 +111,7 @@ public class HttpClientConfig {
       final var it = new BasicHeaderElementIterator(httpResponse.headerIterator(HTTP.CONN_KEEP_ALIVE));
       while (it.hasNext()) {
         final HeaderElement headerElement = it.nextElement();
-        if (headerElement.getName() != null && headerElement.getValue().equalsIgnoreCase("timeout")) {
+        if (headerElement.getName() != null && headerElement.getValue().equalsIgnoreCase(TIMEOUT)) {
           return Long.parseLong(headerElement.getValue()) * 1000;
         }
       }

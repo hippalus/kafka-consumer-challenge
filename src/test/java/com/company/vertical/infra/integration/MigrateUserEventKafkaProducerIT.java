@@ -3,6 +3,7 @@ package com.company.vertical.infra.integration;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.company.vertical.IT;
+import com.company.vertical.KafkaIT;
 import com.company.vertical.domain.user.migration.event.MigrateUser;
 import com.company.vertical.infra.adapters.enrichment.event.MigrateUserEventKafkaConsumer;
 import com.company.vertical.infra.adapters.migration.event.MigrateUserEventKafkaProducer;
@@ -13,8 +14,11 @@ import java.net.URI;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
 
 @IT
+@KafkaIT
+@TestPropertySource(properties = {"spring.kafka.consumer.auto-startup=true", "kafka.enabled=true"})
 class MigrateUserEventKafkaProducerIT {
 
   @Autowired

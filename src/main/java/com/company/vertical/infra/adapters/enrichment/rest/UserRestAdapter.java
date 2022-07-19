@@ -14,8 +14,10 @@ import com.company.vertical.infra.gorestclient.response.UserTodoResponse;
 import io.micrometer.core.instrument.util.StringUtils;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -28,69 +30,47 @@ import org.springframework.util.CollectionUtils;
 public class UserRestAdapter implements UserPort {
 
   private static final Integer FIRST_PAGE = 1;
+  private static final Integer SECOND_PAGE = 2;
   private final GoRestClient goRestClient;
 
   @Override
   public List<UserPost> retrieveUserPosts(final Long userId) {
-    final ResponseEntity<List<UserPostResponse>> responseEntity = this.goRestClient.users().retrievePosts(userId, FIRST_PAGE);
-    final List<UserPostResponse> body = responseEntity.getBody();
-
-    if (Objects.isNull(body)) {
-      throw BusinessException.of("retrieveUserPosts null");
-    }
-
-    final Integer totalPages = getTotalPages(responseEntity);
-    if (totalPages <= FIRST_PAGE) {
-      return body.stream().map(toUserPostModel()).toList();
-    }
-
-    return IntStream.rangeClosed(2, totalPages).parallel()
-        .mapToObj(page -> this.goRestClient.users().retrievePosts(userId, page))
-        .<UserPostResponse>mapMulti((response, consumer) -> Objects.requireNonNull(response.getBody()).forEach(consumer))
-        .map(toUserPostModel())
-        .toList();
+    return callApi(userId, toUserPostModel(), (req, page) -> this.goRestClient.users().retrievePosts(req, page));
   }
 
   @Override
   public List<UserTodo> retrieveUserTodos(final Long userId) {
-    final ResponseEntity<List<UserTodoResponse>> responseEntity = this.goRestClient.users().retrieveTodos(userId, FIRST_PAGE);
-    final List<UserTodoResponse> body = responseEntity.getBody();
-
-    if (Objects.isNull(body)) {
-      throw BusinessException.of("retrieveUserTodos null");
-    }
-
-    final Integer totalPages = getTotalPages(responseEntity);
-    if (totalPages <= FIRST_PAGE) {
-      return body.stream().map(toUserTodoModel()).toList();
-    }
-
-    return IntStream.rangeClosed(2, totalPages).parallel()
-        .mapToObj(page -> this.goRestClient.users().retrieveTodos(userId, page))
-        .<UserTodoResponse>mapMulti((response, consumer) -> Objects.requireNonNull(response.getBody()).forEach(consumer))
-        .map(toUserTodoModel())
-        .toList();
+    return callApi(userId, toUserTodoModel(), (req, page) -> this.goRestClient.users().retrieveTodos(req, page));
   }
 
   @Override
   public List<PostComment> retrievePostComments(final Long postId) {
-    final var responseEntity = this.goRestClient.posts().retrievePostComments(postId, FIRST_PAGE);
-    final List<PostCommentResponse> body = responseEntity.getBody();
+    return callApi(postId, toPostCommentModel(), (req, page) -> this.goRestClient.posts().retrievePostComments(req, page));
+  }
 
+  private static <M, R, T> List<M> callApi(final T request, final Function<? super R, ? extends M> responseToModelMapper,
+      final BiFunction<T, ? super Integer, ? extends ResponseEntity<List<R>>> apiCall) {
+
+    final ResponseEntity<List<R>> responseEntity = apiCall.apply(request, FIRST_PAGE);
+
+    final List<R> body = responseEntity.getBody();
     if (Objects.isNull(body)) {
-      throw BusinessException.of("retrievePostComments null");
+      throw BusinessException.of("Response body is null!");
     }
+
+    final Stream<M> firstPage = body.stream().map(responseToModelMapper);
 
     final Integer totalPages = getTotalPages(responseEntity);
     if (totalPages <= FIRST_PAGE) {
-      return body.stream().map(toPostCommentModel()).toList();
+      return firstPage.toList();
     }
 
-    return IntStream.rangeClosed(2, totalPages).parallel()
-        .mapToObj(page -> this.goRestClient.posts().retrievePostComments(postId, page))
-        .<PostCommentResponse>mapMulti((response, consumer) -> Objects.requireNonNull(response.getBody()).forEach(consumer))
-        .map(toPostCommentModel())
-        .toList();
+    final Stream<M> otherPages = IntStream.rangeClosed(SECOND_PAGE, totalPages).parallel()
+        .mapToObj(page -> apiCall.apply(request, page))
+        .<R>mapMulti((response, consumer) -> Objects.requireNonNull(response.getBody()).forEach(consumer))
+        .map(responseToModelMapper);
+
+    return Stream.concat(firstPage, otherPages).toList();
   }
 
   private static Function<UserPostResponse, UserPost> toUserPostModel() {

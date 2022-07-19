@@ -40,10 +40,8 @@ public class EnrichUserUseCaseHandler implements ObservableUseCasePublisher, Use
 
     final EnrichedUser enrichedUser = this.combine(userId, userTodosFuture, userPostsFuture, postCommentsFuture);
 
-    if (!enrichedUser.isEmpty()) {
-      this.migrateUserEnrichedEventPort.publish(MigrateUserEnriched.fromModel(enrichedUser));
-      log.info("User enrichment completed successfully. {}", enrichedUser);
-    }
+    this.migrateUserEnrichedEventPort.publish(MigrateUserEnriched.fromModel(enrichedUser));
+    log.info("User enrichment completed successfully. {}", enrichedUser);
 
     return enrichedUser;
   }

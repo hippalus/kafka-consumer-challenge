@@ -14,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EventAssertion<T extends Event, E> {
 
-  public void assertEventProcessed(final int maxWaitInSec, final T event, final Supplier<E> resultAfterProcessing) {
+  public void assertEventProcessed(final int maxWaitInSec, final T event, final Supplier<? extends E> resultAfterProcessing) {
     try {
       final LocalDateTime startTime = LocalDateTime.now();
       int checkCount = 0;

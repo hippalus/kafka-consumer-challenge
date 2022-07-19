@@ -12,6 +12,8 @@ public class InMemoryTokenProvider implements TokenProvider {
 
 
   public InMemoryTokenProvider() {
+
+    //TODO: read from env
     final List<String> acc = List.of(
 
         "dcea584795bdfe97147e8f8be9d6eb90eb2fca9e3d97a04d711b9cbb03e4c717",

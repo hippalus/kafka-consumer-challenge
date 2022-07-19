@@ -2,8 +2,8 @@ package com.company.vertical.infra.integration;
 
 import com.company.vertical.AbstractIT;
 import com.company.vertical.IT;
+import com.company.vertical.KafkaIT;
 import com.company.vertical.domain.user.enrichment.model.EnrichedUser;
-import com.company.vertical.domain.user.enrichment.usecase.EnrichUser;
 import com.company.vertical.domain.user.migration.event.MigrateUser;
 import com.company.vertical.infra.adapters.migration.event.MigrateUserEventKafkaProducer;
 import com.company.vertical.infra.common.EventAssertion;
@@ -13,10 +13,10 @@ import io.cloudevents.CloudEvent;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.TestPropertySources;
 
 @IT
-@TestPropertySource(properties = "spring.kafka.consumer.auto-startup=true")
+@KafkaIT
+@TestPropertySource(properties = {"spring.kafka.consumer.auto-startup=true", "kafka.enabled=true"})
 class MigrateUserEventKafkaConsumerIT extends AbstractIT {
 
   final EventAssertion<MigrateUser, EnrichedUser> enrichedUserEventAssertion = new EventAssertion<>();

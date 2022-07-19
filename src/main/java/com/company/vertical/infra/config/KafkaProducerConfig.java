@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.ClientDnsLookup;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
@@ -14,6 +15,7 @@ import org.springframework.kafka.core.ProducerFactory;
 
 @Configuration
 @RequiredArgsConstructor
+@ConditionalOnProperty(value = "kafka.enabled", matchIfMissing = true)
 public class KafkaProducerConfig {
 
   private final KafkaProperties kafkaProperties;

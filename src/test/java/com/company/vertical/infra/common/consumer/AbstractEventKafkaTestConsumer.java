@@ -29,26 +29,28 @@ public abstract class AbstractEventKafkaTestConsumer {
     log.info("Event added to the kafka event list as {}th entry, event: {}", this.queueSize(), event);
   }
 
-  public synchronized void wait(final int maxWaitInSec, final int expectedEventSize) {
-    this.initializeEventQueue();
-    try {
-      final LocalDateTime startTime = LocalDateTime.now();
-      int checkCount = 0;
-      while (true) {
-        if (!(checkCount++ < maxWaitInSec)) {
-          break;
+  public void wait(final int maxWaitInSec, final int expectedEventSize) {
+    synchronized (this) {
+      this.initializeEventQueue();
+      try {
+        final LocalDateTime startTime = LocalDateTime.now();
+        int checkCount = 0;
+        while (true) {
+          if (!(checkCount++ < maxWaitInSec)) {
+            break;
+          }
+          if (this.eventsQueue.size() >= expectedEventSize) {
+            break;
+          }
+          this.sleepOneSecond();
         }
-        if (this.eventsQueue.size() >= expectedEventSize) {
-          break;
-        }
-        this.sleepOneSecond();
+        final LocalDateTime endTime = LocalDateTime.now();
+        log.info("Tried {} seconds. Expected event count is {} and actual event size is {}",
+            Duration.between(startTime, endTime).toSeconds(), expectedEventSize, this.eventsQueue.size());
+      } catch (final Exception e) {
+        log.info("Expected event count is {} and actual event size is {}" + e, expectedEventSize,
+            Objects.isNull(this.eventsQueue) ? 0 : this.eventsQueue.size());
       }
-      final LocalDateTime endTime = LocalDateTime.now();
-      log.info("Tried {} seconds. Expected event count is {} and actual event size is {}",
-          Duration.between(startTime, endTime).toSeconds(), expectedEventSize, this.eventsQueue.size());
-    } catch (final Exception e) {
-      log.info("Expected event count is {} and actual event size is {}" + e, expectedEventSize,
-          Objects.isNull(this.eventsQueue) ? 0 : this.eventsQueue.size());
     }
   }
 
@@ -84,15 +86,17 @@ public abstract class AbstractEventKafkaTestConsumer {
     return event;
   }
 
-  public synchronized List<ConsumerRecord<String, String>> popAll() {
-    if (Objects.isNull(this.eventsQueue)) {
-      return List.of();
+  public List<ConsumerRecord<String, String>> popAll() {
+    synchronized (this) {
+      if (Objects.isNull(this.eventsQueue)) {
+        return List.of();
+      }
+
+      final List<ConsumerRecord<String, String>> eventsAsList = new ArrayList<>(this.eventsQueue);
+      log.info("All {} events from the consumed list is popped for validation.", this.eventsQueue.size());
+      this.eventsQueue.clear();
+
+      return eventsAsList;
     }
-
-    final List<ConsumerRecord<String, String>> eventsAsList = new ArrayList<>(this.eventsQueue);
-    log.info("All {} events from the consumed list is popped for validation.", this.eventsQueue.size());
-    this.eventsQueue.clear();
-
-    return eventsAsList;
   }
 }
