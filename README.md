@@ -76,7 +76,7 @@ https://herbertograca.com/2017/11/16/explicit-architecture-01-ddd-hexagonal-onio
 
 ### Hexagonal Architecture Flow Diagram
 
-![1605297441328](docs/images/flow.png)
+![1605297441328](docs/images/hexagon-flow.png)
 
 
 ## TODO List
