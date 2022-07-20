@@ -14,7 +14,7 @@ import org.springframework.kafka.core.KafkaAdmin;
 
 @Configuration
 @RequiredArgsConstructor
-@ConditionalOnProperty(value = "kafka.enabled", matchIfMissing = true)
+@ConditionalOnProperty(value = "kafka.enabled", havingValue = "true")
 public class KafkaAdminConfig {
 
   private final KafkaProperties kafkaProperties;

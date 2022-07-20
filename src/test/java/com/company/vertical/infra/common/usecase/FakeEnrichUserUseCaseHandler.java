@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 @Getter
 @Service
-@Primary
 @ConditionalOnProperty(name = "usecase.enabled", havingValue = "false", matchIfMissing = true)
 public class FakeEnrichUserUseCaseHandler implements ObservableUseCasePublisher, UseCaseHandler<EnrichedUser, EnrichUser> {
 
