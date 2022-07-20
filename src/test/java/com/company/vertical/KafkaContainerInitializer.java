@@ -43,7 +43,7 @@ public class KafkaContainerInitializer implements ApplicationContextInitializer<
         "username=\"admin\" " +
         "password=\"admin-secret\";");
 
-    return new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:5.4.2"))
+    return new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.2.0"))
         .withEmbeddedZookeeper()
         .withStartupAttempts(1)
         .withEnv(env);

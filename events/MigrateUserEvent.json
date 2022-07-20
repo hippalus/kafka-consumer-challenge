@@ -5,8 +5,8 @@
   "type": "com.company.vertical.domain.user.migration.event.MigrateUser",
   "datacontenttype": "application/json",
   "subject": "MigrateUser",
-  "time": "2022-07-18T11:40:29.740189Z",
+  "time": "2022-07-20T18:30:00Z",
   "data": {
-    "userId": 1
+    "userId": 2252
   }
 }

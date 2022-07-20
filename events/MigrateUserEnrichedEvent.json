@@ -1,0 +1,84 @@
+{
+  "specversion": "1.0",
+  "id": "4cfc3e41-9845-4bfc-a365-db0b9c0f97e2",
+  "source": "http://localhost",
+  "type": "com.company.vertical.domain.user.enrichment.event.MigrateUserEnriched",
+  "datacontenttype": "application/json",
+  "subject": "MigrateUserEnriched",
+  "data": {
+    "userId": 2252,
+    "userTodos": [
+      {
+        "id": 1137,
+        "userId": 2252,
+        "title": "Una alveus ait appositus sordeo capio tersus magni confugo.",
+        "duesOn": "2022-07-20T18:31:00Z",
+        "status": "pending"
+      }
+    ],
+    "userPosts": [
+      {
+        "id": 1048,
+        "user_id": 2252,
+        "title": "Tot currus sumo delinquo acceptus addo rem ut nesciunt stabilis ventus consequatur dolorum in repudiandae abbas vacuus.",
+        "body": "Sequi delinquo absum. Ipsa bellicus patria. Saepe aut urbs. Temperantia sequi usitas. Carbo sulum voco. Carus laboriosam admitto. Voluptatem tubineus maiores. Aveho vere nesciunt. Repellat acquiro demoror. Adflicto ascit ante. Tenus dolorum ambulo. Cursim sint aggredior. Catena suppono nulla. Canto nam sed. Admoveo tempus dolores. Advoco turbo est. Delego conculco atrox. Magni ultra quo. Angulus subiungo statim. Civitas adamo vesco."
+      },
+      {
+        "id": 1047,
+        "user_id": 2252,
+        "title": "Vallum tendo titulus argentum tactus vomito tamdiu denuncio tandem abduco demens conicio aegre.",
+        "body": "Trado celebrer degenero. Color tumultus comptus. Deinde conscendo strenuus. Ter comitatus umbra. Adamo reiciendis aestivus. Alioqui rem quasi. Theca thorax blandior. Amor ulciscor tactus. Adnuo porro derideo. Ullam depromo auxilium. Reiciendis virgo ipsam. Atrocitas adicio deludo. Culpo demum eligendi. Tutis caelum vinum. Damnatio baiulus stips. Amplexus cinis sto."
+      },
+      {
+        "id": 1046,
+        "user_id": 2252,
+        "title": "Animi cum capillus corona delego canonicus degenero sint culpo peccatus ventosus ulciscor amitto advoco vergo verbera surgo.",
+        "body": "Veniam defetiscor tergo. Viduo vorax voluptatem. Animadverto crustulum tantillus. Pariatur ipsum color. Auris subnecto studio. Conventus usitas bibo. Ut aliquam advoco. Uterque vindico tot. Adicio absconditus iste. Conforto sit tempore. Depono tardus suggero. Altus bellum tandem. Fuga a voluptas. Tardus vultuosus synagoga. Celo vestigium adultus. Antepono torrens laudantium. Amoveo conscendo armarium. Defetiscor solum socius. Rerum cuppedia repellat."
+      }
+    ],
+    "commentsOfEachPosts": [
+      {
+        "id": 1057,
+        "post_id": 1048,
+        "name": "Bhishma Ahuja",
+        "email": "bhishma_ahuja@grady.net",
+        "body": "Consequuntur et aut."
+      },
+      {
+        "id": 1056,
+        "post_id": 1047,
+        "name": "Subhash Sethi DDS",
+        "email": "sethi_subhash_dds@watsica.net",
+        "body": "Magnam sed quisquam. Porro architecto quas. Omnis aut nulla. Vitae et ut."
+      },
+      {
+        "id": 1055,
+        "post_id": 1046,
+        "name": "Rev. Rukhmani Talwar",
+        "email": "rev_rukhmani_talwar@swift.biz",
+        "body": "Voluptatum minima esse. Voluptas voluptatem expedita. Totam sed cum. Amet veritatis neque."
+      },
+      {
+        "id": 1054,
+        "post_id": 1046,
+        "name": "Triloki Somayaji",
+        "email": "somayaji_triloki@langworth-purdy.biz",
+        "body": "Consequuntur debitis pariatur. Sint officiis facilis. Soluta sapiente vel."
+      },
+      {
+        "id": 1053,
+        "post_id": 1046,
+        "name": "Opalina Saini",
+        "email": "opalina_saini@rolfson.io",
+        "body": "Ut culpa omnis. Est doloribus voluptatem. Quasi delectus sunt. At provident similique."
+      },
+      {
+        "id": 1052,
+        "post_id": 1046,
+        "name": "Sarala Sinha",
+        "email": "sarala_sinha@prohaska.name",
+        "body": "Ut et amet."
+      }
+    ]
+  }
+}

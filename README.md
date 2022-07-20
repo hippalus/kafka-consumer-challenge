@@ -32,6 +32,22 @@ To stop all services you can run:
 ```
 make dc-down
 ```
+
+To run unit and integration tests locally (Required Java 17, Maven 3.8.x, Docker):
+```
+make test
+```
+
+To run all unit tests locally (Required Java 17, Maven 3.8.x):
+```
+make unit-test
+```
+
+To run integration tests locally (Required Java 17, Maven 3.8.x, Docker):
+```
+make integration-test
+```
+
 ## Challenge
 
 You received together with this project a file that contains the challenge description.
@@ -47,6 +63,25 @@ Enrich event with the content presented at this service https://gorest.co.in
 - Comments by Post (/public/v2/posts/`{{POST_ID}}`/comments)
 
 
+## Architectural Details
+
+This project implemented with Hexagonal Architecture (aka Ports And Adapters Pattern) to write clean,
+maintainable, well-defined boundary context, well-tested domain code and isolate business logic from outside concern.
+
+### Usefully Links
+
+https://jmgarridopaz.github.io/content/hexagonalarchitecture.html
+
+https://herbertograca.com/2017/11/16/explicit-architecture-01-ddd-hexagonal-onion-clean-cqrs-how-i-put-it-all-together/
+
+### Hexagonal Architecture Flow Diagram
+
+![1605297441328](docs/images/flow.png)
+
+
+## TODO List
+
+* Collect metrics of the service.
 
 
 
