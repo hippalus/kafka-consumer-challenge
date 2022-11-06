@@ -19,7 +19,7 @@ services:
 
   zookeeper:
     platform: linux/arm64
-    image: confluentinc/cp-zookeeper:5.3.1
+    image: confluentinc/cp-zookeeper:7.2.0
     hostname: zookeeper
     container_name: zookeeper
     ports:
@@ -30,7 +30,7 @@ services:
 
   broker:
     platform: linux/arm64
-    image: confluentinc/cp-kafka:5.3.1
+    image: confluentinc/cp-kafka:7.2.0
     hostname: broker
     container_name: broker
     depends_on:

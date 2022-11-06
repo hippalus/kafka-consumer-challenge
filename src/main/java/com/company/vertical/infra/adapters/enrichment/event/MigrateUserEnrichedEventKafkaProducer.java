@@ -13,15 +13,17 @@ import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@ConditionalOnProperty(value = "kafka.enabled", matchIfMissing = true)
 public class MigrateUserEnrichedEventKafkaProducer implements MigrateUserEnrichedEventPort {
 
-  public static final String EVENT_SOURCE = "http://localhost";
+  private static final String EVENT_SOURCE = "http://localhost";
   private final ObjectMapper objectMapper;
   private final KafkaTemplate<String, String> kafkaTemplate;
   @Value("${spring.kafka.topic}")

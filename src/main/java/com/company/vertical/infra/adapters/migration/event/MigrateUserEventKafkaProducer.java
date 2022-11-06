@@ -9,16 +9,20 @@ import io.cloudevents.core.data.PojoCloudEventData;
 import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.jackson.JsonFormat;
 import java.net.URI;
+import java.time.Clock;
+import java.time.OffsetDateTime;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@ConditionalOnProperty(value = "kafka.enabled", matchIfMissing = true)
 public class MigrateUserEventKafkaProducer implements MigrateUserEventPort {
 
   public static final String EVENT_SOURCE = "http://localhost";
@@ -34,11 +38,12 @@ public class MigrateUserEventKafkaProducer implements MigrateUserEventPort {
     this.kafkaTemplate.send(this.topic, cloudEventStr);
   }
 
-  private CloudEvent createCloudEvent(final MigrateUser user) {
+  public CloudEvent createCloudEvent(final MigrateUser user) {
     return CloudEventBuilder.v1()
         .withType(user.getClass().getCanonicalName())
         .withSubject(user.getClass().getSimpleName())
         .withSource(URI.create(EVENT_SOURCE))
+        .withTime(OffsetDateTime.now(Clock.systemUTC()))
         .withId(UUID.randomUUID().toString())
         .withDataContentType(MediaType.APPLICATION_JSON.toString())
         .withData(PojoCloudEventData.wrap(user, this.objectMapper::writeValueAsBytes))
@@ -46,7 +51,7 @@ public class MigrateUserEventKafkaProducer implements MigrateUserEventPort {
 
   }
 
-  private String toStr(final CloudEvent migrateUser) {
+  public String toStr(final CloudEvent migrateUser) {
     return new String(
         Objects.requireNonNull(EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE))
             .serialize(migrateUser)

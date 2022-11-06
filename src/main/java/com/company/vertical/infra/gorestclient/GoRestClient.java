@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class GoRestClient {
 
+  public static final String X_PAGINATION_PAGES = "X-Pagination-Pages";
   private final UserAdapter userAdapter;
   private final PostAdapter postAdapter;
 

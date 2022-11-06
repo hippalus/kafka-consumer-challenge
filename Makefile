@@ -42,5 +42,14 @@ recompile-locally:
 ###############
 #    Tests
 ###############
-test:
+dc-test:
 	 cd dev && docker-compose exec kafka-consumer-challenge bash -c "cd /development && mvn test" && cd -
+
+test:
+	mvn clean verify
+
+unit-test:
+	mvn clean verify -DskipITs=true
+
+integration-test:
+	mvn clean verify -DskipUTs=true

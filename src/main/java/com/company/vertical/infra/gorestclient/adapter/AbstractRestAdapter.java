@@ -1,48 +1,66 @@
 package com.company.vertical.infra.gorestclient.adapter;
 
+import com.company.vertical.infra.gorestclient.auth.TokenProvider;
 import com.company.vertical.infra.gorestclient.request.RequestOptions;
-import io.micrometer.core.instrument.util.StringUtils;
-import java.time.Duration;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.CollectionUtils;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import reactor.util.retry.Retry;
-import reactor.util.retry.RetryBackoffSpec;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 
+@Slf4j
 @RequiredArgsConstructor
 public abstract class AbstractRestAdapter {
 
-  protected static final double JITTER_FACTOR = 0.75d;
-  protected static final String X_LINKS_NEXT = "X-Links-Next";
-  protected static final int MAX_ATTEMPTS = 5;
-  protected static final int MIN_BACK_OF_SECOND = 5;
-
+  protected static final String PAGE = "page";
+  protected final RestTemplate restTemplate;
   protected final RequestOptions requestOptions;
-  protected final WebClient webClient;
+  protected final TokenProvider tokenProvider;
 
-  protected <T> Mono<ResponseEntity<Flux<T>>> doGetFlux(final String uri, final Class<T> clazz) {
-    return this.webClient.get()
-        .uri(uri)
-        .retrieve()
-        .toEntityFlux(clazz)
-        .retryWhen(retryBackOffSpec());
-  }
-
-  protected <T> Mono<ResponseEntity<Flux<T>>> nextPage(final ResponseEntity<Flux<T>> response, final Class<T> clazz) {
-    final List<String> next = response.getHeaders().get(X_LINKS_NEXT);
-    if (CollectionUtils.isEmpty(next) || StringUtils.isEmpty(next.get(0))) {
-      return Mono.empty();
+  public <T> ResponseEntity<T> doGet(final String uri, final ParameterizedTypeReference<T> type) {
+    try {
+      return this.restTemplate.exchange(uri, HttpMethod.GET, this.createHttpEntity(), type);
+    } catch (final HttpClientErrorException ex) {
+      final HttpStatus statusCode = ex.getStatusCode();
+      if (statusCode == HttpStatus.TOO_MANY_REQUESTS || statusCode == HttpStatus.UNAUTHORIZED) {
+        log.warn("Starting retry request for {} with a new token.", uri);
+        return this.restTemplate.exchange(uri, HttpMethod.GET, this.createHttpEntityWithRefreshedToken(), type);
+      }
+      throw ex;
     }
-    return this.doGetFlux(next.get(0), clazz);
   }
 
+  protected <T> HttpEntity<T> createHttpEntity() {
+    return new HttpEntity<>(this.createHeaders());
+  }
 
-  protected static RetryBackoffSpec retryBackOffSpec() {
-    return Retry.backoff(MAX_ATTEMPTS, Duration.ofSeconds(MIN_BACK_OF_SECOND)).jitter(JITTER_FACTOR);
+  protected <T> HttpEntity<T> createHttpEntityWithRefreshedToken() {
+    return new HttpEntity<>(this.refreshAuthToken());
+  }
+
+  protected HttpHeaders createHeaders() {
+    final HttpHeaders headers = defaultHeaders();
+    headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + this.tokenProvider.current());
+    return headers;
+  }
+
+  protected HttpHeaders refreshAuthToken() {
+    final HttpHeaders headers = defaultHeaders();
+    headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + this.tokenProvider.next());
+    return headers;
+  }
+
+  protected static HttpHeaders defaultHeaders() {
+    final HttpHeaders headers = new HttpHeaders();
+    headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
+    headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+    return headers;
   }
 
 }

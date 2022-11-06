@@ -7,5 +7,6 @@ public interface UseCasePublisher {
 
   <R, T extends UseCase> R publish(Class<R> returnClass, T useCase);
 
+  @SuppressWarnings("unused")
   <R, T extends UseCase> void publish(T useCase);
 }
