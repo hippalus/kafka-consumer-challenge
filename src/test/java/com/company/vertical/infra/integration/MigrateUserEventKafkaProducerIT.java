@@ -69,8 +69,9 @@ class MigrateUserEventKafkaProducerIT {
         .returns("MigrateUser", CloudEvent::getSubject)
         .returns(SpecVersion.V1, CloudEvent::getSpecVersion);
 
-    final MigrateUser receivedEventData = this.migrateUserEventKafkaConsumer.getMigrateUserEvent(cloudEvent);
-    assertThat(receivedEventData).isEqualTo(migrateUserEvent);
+    final var receivedEventData = this.migrateUserEventKafkaConsumer.getMigrateUserEvent(cloudEvent);
+    assertThat(receivedEventData).isPresent()
+        .get().isEqualTo(migrateUserEvent);
   }
 
 }
